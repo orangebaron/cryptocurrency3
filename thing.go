@@ -6,11 +6,11 @@ import "math/rand"
 import "encoding/binary"
 import "bytes"
 import "time"
+import "os"
 /*import "math/big"
 import "crypto/elliptic"
 import "crypto/ecdsa"
-import "io/ioutil"
-import "os"*/
+import "io/ioutil"*/
 
 const hashSize = 32
 
@@ -60,6 +60,8 @@ func bruteforce(data []byte,quitChannel chan bool) (bool,block) {
 	return true,currentBlock
 }
 
+var nodelist []string
+
 func main() {
 	blockchain=[]block{block{[]byte{},[hashSize]byte{},0,0}}
 	addToChain([]byte("a"))
@@ -73,4 +75,6 @@ func main() {
 	now := time.Now()
 	bruteforce([]byte("d"),quitChannel)
 	fmt.Println(time.Since(now))
+	nodelist = os.Args[1:]
+	fmt.Println(nodelist)
 }
