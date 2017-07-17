@@ -51,7 +51,7 @@ func (b block) checkNonce(d1 uint32,d2 uint64) bool {
 	return true
 }
 func bruteforce(data []byte,quitChannel chan bool) (bool,block) {
-	currentBlock := block{data,blockchain[len(blockchain)-1].getHash(),rand.Uint64(),0}
+	currentBlock := block{data,blockchain[len(blockchain)-1].getHash(),uint64(rand.Uint32())*uint64(rand.Uint32()),0}
 	for ;!(currentBlock.checkNonce(difficulty1,difficulty2));currentBlock.nonce++ {
 		/*if <-quitChannel {
 			return false,currentBlock
