@@ -5,7 +5,7 @@ import "crypto/sha256"
 import "math/rand"
 import "encoding/binary"
 import "bytes"
-import "time"
+//import "time"
 import "os"
 /*import "math/big"
 import "crypto/elliptic"
@@ -50,14 +50,19 @@ func (b block) checkNonce(d1 uint32,d2 uint64) bool {
 	}
 	return true
 }
-func bruteforce(data []byte,quitChannel chan bool) (bool,block) {
+func bruteforce(data []byte,quitChannel chan struct{}) (bool,block) {
 	currentBlock := block{data,blockchain[len(blockchain)-1].getHash(),uint64(rand.Uint32())*uint64(rand.Uint32()),0}
-	for ;!(currentBlock.checkNonce(difficulty1,difficulty2));currentBlock.nonce++ {
-		/*if <-quitChannel {
-			return false,currentBlock
-		}*/
+	for {
+		select {
+			case <-quitChannel:
+				return false,currentBlock
+			default:
+				currentBlock.nonce++
+				if currentBlock.checkNonce(difficulty1,difficulty2) {
+					return true,currentBlock
+				}
+		}
 	}
-	return true,currentBlock
 }
 
 var nodelist []string
@@ -67,14 +72,7 @@ func main() {
 	addToChain([]byte("a"))
 	addToChain([]byte("b"))
 	addToChain([]byte("c"))
-	quitChannel := make(chan bool,1)
-	//go bruteforce([]byte("d"),quitChannel)
-	//for {
-	//	quitChannel<-false
-	//}
-	now := time.Now()
-	bruteforce([]byte("d"),quitChannel)
-	fmt.Println(time.Since(now))
+	
 	nodelist = os.Args[1:]
 	fmt.Println(nodelist)
 }
