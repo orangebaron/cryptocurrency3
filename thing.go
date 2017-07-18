@@ -71,7 +71,7 @@ func handleConn(conn net.Conn) {
 	data := make([]byte,1)
 	conn.Read(data)
 	if data[0] == 0 { //send length of chain
-		fmt.Fprint(conn,len(blockchain))
+		binary.Write(conn,binary.LittleEndian,uint32(len(blockchain)))
 		conn.Close()
 	}
 	fmt.Println(data)
