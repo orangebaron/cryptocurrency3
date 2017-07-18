@@ -24,9 +24,9 @@ type block struct {
 }
 
 func (b block) getHash() [hashSize]byte {
-	nonce := make([]byte,64)
+	nonce := make([]byte,8)
 	binary.PutUvarint(nonce,b.nonce)
-	difficultyAddition := make([]byte,32)
+	difficultyAddition := make([]byte,8)
 	binary.PutUvarint(difficultyAddition,b.difficultyAddition)
 	return sha256.Sum256(append(append(append(b.data,b.prevHash[:]...),nonce...),difficultyAddition...))
 }
