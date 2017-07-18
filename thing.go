@@ -89,9 +89,9 @@ func main() {
 		conn,err := net.Dial("tcp",node)
 		if err == nil {
 			conn.Write([]byte{0})
-			//buf := make([]byte,32)
-			//conn.Read(buf)
-			//fmt.Println(buf)
+			buf := make([]byte,32)
+			conn.Read(buf)
+			fmt.Println(buf)
 		}
 	}
 
