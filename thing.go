@@ -5,7 +5,7 @@ import "crypto/sha256"
 import "math/rand"
 import "encoding/binary"
 import "bytes"
-//import "time"
+import "time"
 import "os"
 import "net"
 /*import "math/big"
@@ -88,6 +88,7 @@ func main() {
 	//get lengths
 	lengths := make([]uint32,len(nodelist))
 	done := 0
+	start := time.Now()
 	for index,node := range nodelist {
 		go func(index int,node string){
 			conn,err := net.Dial("tcp",node)
@@ -101,7 +102,7 @@ func main() {
 			}
 		}(index,node)
 	}
-	for ;done<len(nodelist); {}
+	for ;done<len(nodelist) && time.Since(start)<3000000000; {} //wait until 3 seconds pass or all data is gathered
 	fmt.Println(lengths)
 
 	listen,_ := net.Listen("tcp",":6565")
