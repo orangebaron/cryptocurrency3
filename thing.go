@@ -7,6 +7,7 @@ import "encoding/binary"
 import "bytes"
 //import "time"
 import "os"
+import "net"
 /*import "math/big"
 import "crypto/elliptic"
 import "crypto/ecdsa"
@@ -66,13 +67,30 @@ func bruteforce(data []byte,quitChannel chan struct{}) (bool,block) {
 }
 
 var nodelist []string
+func handleConn(conn net.Conn) {
+	data := make([]byte,1)
+	conn.Read(data)
+	if data[0] == 0 { //send length of chain
+		chainLen:=make([]byte,32)
+		binary.PutVarint(chainLen,int64(len(blockchain)))
+		conn.Write(chainLen)
+		fmt.Println(chainLen)
+		conn.Close()
+	}
+	fmt.Println(data)
+}
 
 func main() {
 	blockchain=[]block{block{[]byte{},[hashSize]byte{},0,0}}
 	addToChain([]byte("a"))
 	addToChain([]byte("b"))
 	addToChain([]byte("c"))
-	
+
 	nodelist = os.Args[1:]
-	fmt.Println(nodelist)
+
+	listen,_ := net.Listen("tcp", ":6565")
+	for {
+		conn,_ := listen.Accept()
+		go handleConn(conn)
+	}
 }
