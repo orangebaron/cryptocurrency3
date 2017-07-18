@@ -31,6 +31,37 @@ func (b block) getHash() [hashSize]byte {
 	return sha256.Sum256(append(append(append(b.data,b.prevHash[:]...),nonce...),difficultyAddition...))
 }
 
+func bytesToBlock(data []byte) block {
+	nonce,_ := binary.ReadUvarint(bytes.NewReader(data[len(data)-8:]))
+	return block{data[:len(data)-8],[hashSize]byte{},nonce,uint64(0)}
+}
+func bytesToChain(data []byte) []block {
+	var chain []block
+	for ;len(data)>0; {
+		len,_ := binary.ReadUvarint(bytes.NewReader(data[:64]))
+		data = data[64:]
+		chain = append(chain,bytesToBlock(data[:len]))
+		data = data[len:]
+	}
+	return chain
+}
+func blockToBytes(b block) []byte {
+	var buf []byte
+	binary.Write(bytes.NewBuffer(buf),binary.LittleEndian,b.nonce)
+	return append(b.data,buf...)
+}
+func chainToBytes(chain []block) []byte {
+	var encodedChain []byte
+	for _,block := range chain {
+		encodedBlock := blockToBytes(block)
+		var buf []byte
+		binary.Write(bytes.NewBuffer(buf),binary.LittleEndian,uint64(len(encodedBlock)))
+		encodedChain = append(encodedChain,buf...)
+		encodedChain = append(encodedChain,encodedBlock...)
+	}
+	return encodedChain
+}
+
 var blockchain []block
 func addToChain(data []byte) {
 	blockchain=append(blockchain,block{data,blockchain[len(blockchain)-1].getHash(),0,0})
