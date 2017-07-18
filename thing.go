@@ -78,15 +78,14 @@ func handleConn(conn net.Conn) {
 }
 
 func main() {
+	//make genesis block
 	blockchain=[]block{block{[]byte{},[hashSize]byte{},0,0}}
-	addToChain([]byte("a"))
-	addToChain([]byte("b"))
-	addToChain([]byte("c"))
 
 	nodelist = os.Args[1:]
 
 	//get lengths
 	lengths := make([]uint32,len(nodelist))
+	max := uint32(0)
 	done := 0
 	start := time.Now()
 	for index,node := range nodelist {
@@ -97,6 +96,9 @@ func main() {
 				var length uint32
 				binary.Read(conn,binary.LittleEndian,&length)
 				lengths[index]=length
+				if length>max {
+					max = length
+				}
 				conn.Close()
 				done++
 			}
@@ -104,6 +106,22 @@ func main() {
 	}
 	for ;done<len(nodelist) && time.Since(start)<3000000000; {} //wait until 3 seconds pass or all data is gathered
 	fmt.Println(lengths)
+	//now use counting sort to sort nodelist based on lengths
+	histogram := make([]uint32,max+1)
+	sortedNodelist := make([]string,len(nodelist))
+	for index,_ := range nodelist {
+		histogram[lengths[index]]++
+	}
+	total := uint32(0)
+	for index,count := range histogram {
+		histogram[index]=total
+		total+=count
+	}
+	for index,node := range nodelist {
+		sortedNodelist[histogram[lengths[index]]] = node
+		histogram[lengths[index]]++
+	}
+	fmt.Println(sortedNodelist)
 
 	listen,_ := net.Listen("tcp",":6565")
 	for {
