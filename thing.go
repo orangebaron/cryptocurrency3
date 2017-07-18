@@ -70,7 +70,7 @@ var nodelist []string
 func handleConn(conn net.Conn) {
 	data := make([]byte,1)
 	conn.Read(data)
-	if data[0] == 0 { //send length of chain
+	if data[0] == 48 { //send length of chain
 		fmt.Fprint(conn,len(blockchain))
 		conn.Close()
 	}
@@ -88,7 +88,10 @@ func main() {
 	for _,node := range nodelist {
 		conn,err := net.Dial("tcp",node)
 		if err == nil {
-			fmt.Fprint(conn,0)
+			fmt.Fprint(conn,byte(0))
+			buf := make([]byte,32)
+			conn.Read(buf)
+			fmt.Println(buf)
 		}
 	}
 
