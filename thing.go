@@ -84,6 +84,13 @@ func main() {
 	addToChain([]byte("c"))
 
 	nodelist = os.Args[1:]
+	//var lengths []int
+	for _,node := range nodelist {
+		conn,err := net.Dial("tcp",node)
+		if err == nil {
+			fmt.Fprint(conn,0)
+		}
+	}
 
 	listen,_ := net.Listen("tcp", ":6565")
 	for {
