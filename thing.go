@@ -66,7 +66,7 @@ func chainToBytes(chain []block) []byte {
 	var encodedChain []byte
 	for _,block := range chain {
 		encodedBlock := blockToBytes(block)
-		var buf []byte
+		buf := make([]byte,64)
 		binary.Write(bytes.NewBuffer(buf),binary.LittleEndian,uint64(len(encodedBlock)))
 		encodedChain = append(encodedChain,buf...)
 		fmt.Println("ASFDSJ1",encodedChain)
