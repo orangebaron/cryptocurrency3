@@ -8,6 +8,7 @@ import "bytes"
 import "time"
 import "os"
 import "net"
+import "bufio"
 /*import "math/big"
 import "crypto/elliptic"
 import "crypto/ecdsa"
@@ -37,7 +38,7 @@ func bytesToBlock(data []byte) block {
 }
 func bytesToChain(data []byte) []block {
 	var chain []block
-	for ;len(data)>0; {
+	for len(data)>0 {
 		len,_ := binary.ReadUvarint(bytes.NewReader(data[:64]))
 		data = data[64:]
 		chain = append(chain,bytesToBlock(data[:len]))
@@ -105,7 +106,7 @@ func handleConn(conn net.Conn) {
 		binary.Write(conn,binary.LittleEndian,uint32(len(blockchain)))
 		conn.Close()
 	}
-	fmt.Println(data)
+	fmt.Println("Received data",data)
 }
 
 func main() {
@@ -136,7 +137,6 @@ func main() {
 		}(index,node)
 	}
 	for ;done<len(nodelist) && time.Since(start)<3000000000; {} //wait until 3 seconds pass or all data is gathered
-	fmt.Println(lengths)
 	//now use counting sort to sort nodelist based on lengths
 	histogram := make([]uint32,max+1)
 	sortedNodelist := make([]string,len(nodelist))
@@ -152,7 +152,22 @@ func main() {
 		sortedNodelist[histogram[lengths[index]]] = node
 		histogram[lengths[index]]++
 	}
-	fmt.Println(sortedNodelist)
+	fmt.Println("Sorted nodelist:",sortedNodelist)
+	//download the largest chain
+	for len(sortedNodelist)>0 {
+		conn,err := net.Dial("tcp",sortedNodelist[len(sortedNodelist)-1])
+		sortedNodelist = sortedNodelist[:len(sortedNodelist)-1]
+		if err != nil {
+			continue
+		}
+		conn.Write([]byte{1})
+		bytes,err := bufio.NewReader(conn).ReadBytes(0)
+		if err != nil {
+			continue
+		}
+		blockchain = bytesToChain(bytes)
+		break
+	}
 
 	listen,_ := net.Listen("tcp",":6565")
 	for {
