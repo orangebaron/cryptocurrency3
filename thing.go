@@ -127,7 +127,7 @@ func handleConn(conn net.Conn) {
 	if data[0] == 0 { //send length of chain
 		binary.Write(conn,binary.LittleEndian,uint32(len(blockchain)))
 	} else if data[0] == 1 { //send chain
-			binary.Write(conn,binary.LittleEndian,chainToBytes(blockchain))
+			binary.Write(conn,binary.LittleEndian,append(chainToBytes(blockchain),byte(0)))
 	}
 	conn.Close()
 	fmt.Println("Received data",data)
@@ -164,7 +164,7 @@ func main() {
 			}
 		}(index,node)
 	}
-	for ;done<len(nodelist) && time.Since(start)<3000000000; {} //wait until 3 seconds pass or all data is gathered
+	for done<len(nodelist) && time.Since(start)<3000000000 {} //wait until 3 seconds pass or all data is gathered
 	//now use counting sort to sort nodelist based on lengths
 	histogram := make([]uint32,max+1)
 	sortedNodelist := make([]string,len(nodelist))
@@ -189,14 +189,11 @@ func main() {
 			continue
 		}
 		conn.Write([]byte{1})
-		bytes,err := bufio.NewReader(conn).ReadBytes(0)
-		if err != nil {
-			continue
-		}
+		bytes,_ := bufio.NewReader(conn).ReadBytes(0)
 		blockchain = bytesToChain(bytes)
+		fmt.Println("New chain:",blockchain)
 		break
 	}
-
 	fmt.Println("Chain:",blockchain)
 
 	listen,_ := net.Listen("tcp",":6565")
