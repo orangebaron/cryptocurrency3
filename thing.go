@@ -69,7 +69,9 @@ func chainToBytes(chain []block) []byte {
 		var buf []byte
 		binary.Write(bytes.NewBuffer(buf),binary.LittleEndian,uint64(len(encodedBlock)))
 		encodedChain = append(encodedChain,buf...)
+		fmt.Println("ASFDSJ1",encodedChain)
 		encodedChain = append(encodedChain,encodedBlock...)
+		fmt.Println("ASFDSJ2",encodedChain)
 	}
 	//now we replace [0] with [1,1] and [1] with [1,2]
 	encodedChain = append(encodedChain,byte(2))
@@ -124,6 +126,7 @@ var nodelist []string
 func handleConn(conn net.Conn) {
 	data := make([]byte,1)
 	conn.Read(data)
+	fmt.Println("Received data",data)
 	if data[0] == 0 { //send length of chain
 		binary.Write(conn,binary.LittleEndian,uint32(len(blockchain)))
 	} else if data[0] == 1 { //send chain
@@ -131,7 +134,6 @@ func handleConn(conn net.Conn) {
 		binary.Write(conn,binary.LittleEndian,append(chainToBytes(blockchain),byte(0)))
 	}
 	conn.Close()
-	fmt.Println("Received data",data)
 }
 
 func main() {
