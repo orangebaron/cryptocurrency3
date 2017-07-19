@@ -138,6 +138,10 @@ func main() {
 	blockchain=[]block{block{[]byte{},[hashSize]byte{},0,0}}
 
 	nodelist = os.Args[1:]
+	if len(nodelist) == 0 {
+		addToChain([]block{'a'})
+		addToChain([]block{'b'})
+	}
 
 	//get lengths
 	lengths := make([]uint32,len(nodelist))
@@ -192,6 +196,8 @@ func main() {
 		blockchain = bytesToChain(bytes)
 		break
 	}
+
+	fmt.Println("Chain:",blockchain)
 
 	listen,_ := net.Listen("tcp",":6565")
 	for {
