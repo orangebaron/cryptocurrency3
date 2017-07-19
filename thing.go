@@ -37,6 +37,17 @@ func bytesToBlock(data []byte) block {
 	return block{data[:len(data)-8],[hashSize]byte{},nonce,uint64(0)}
 }
 func bytesToChain(data []byte) []block {
+	//replace [1,1] with [0] and [1,2] with [1]
+	data = append(data,byte(2))
+	for i:=0;i<len(data);i++{
+		if data[i]==byte(1) && data[i+1]==byte(1) {
+			data = append(append(data[:i],byte(0)),data[i+2:]...)
+		} else if data[i]==byte(1) && data[i+1]==byte(2) {
+			data = append(append(data[:i],byte(1)),data[i+2:]...)
+		}
+	}
+	data = data[:len(data)-1]
+
 	var chain []block
 	for len(data)>0 {
 		len,_ := binary.ReadUvarint(bytes.NewReader(data[:64]))
@@ -60,7 +71,18 @@ func chainToBytes(chain []block) []byte {
 		encodedChain = append(encodedChain,buf...)
 		encodedChain = append(encodedChain,encodedBlock...)
 	}
-	return encodedChain
+	//now we replace [0] with [1,1] and [1] with [1,2]
+	encodedChain = append(encodedChain,byte(2))
+	for i:=0;i<len(encodedChain);i++{
+		if encodedChain[i]==byte(0) {
+			encodedChain = append(append(encodedChain[:i],byte(1),byte(1)),encodedChain[i+1:]...)
+			i++
+		} else if encodedChain[i]==byte(1) {
+			encodedChain = append(append(encodedChain[:i],byte(1),byte(2)),encodedChain[i+1:]...)
+			i++
+		}
+	}
+	return encodedChain[:len(encodedChain)-1]
 }
 
 var blockchain []block
@@ -104,8 +126,10 @@ func handleConn(conn net.Conn) {
 	conn.Read(data)
 	if data[0] == 0 { //send length of chain
 		binary.Write(conn,binary.LittleEndian,uint32(len(blockchain)))
-		conn.Close()
+	} else if data[0] == 1 { //send chain
+			binary.Write(conn,binary.LittleEndian,chainToBytes(blockchain))
 	}
+	conn.Close()
 	fmt.Println("Received data",data)
 }
 
