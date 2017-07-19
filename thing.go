@@ -139,8 +139,8 @@ func main() {
 
 	nodelist = os.Args[1:]
 	if len(nodelist) == 0 {
-		addToChain([]block{'a'})
-		addToChain([]block{'b'})
+		addToChain([]block{"a"})
+		addToChain([]block{"b"})
 	}
 
 	//get lengths
