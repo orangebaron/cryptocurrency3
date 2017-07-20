@@ -58,9 +58,9 @@ func bytesToChain(data []byte) []block {
 	return chain
 }
 func blockToBytes(b block) []byte {
-	var buf []byte
-	binary.Write(bytes.NewBuffer(buf),binary.LittleEndian,b.nonce)
-	return append(b.data,buf...)
+	buf := new(bytes.Buffer)
+	binary.Write(buf,binary.LittleEndian,b.nonce)
+	return append(b.data,buf.Bytes()...)
 }
 func chainToBytes(chain []block) []byte {
 	var encodedChain []byte
