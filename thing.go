@@ -79,6 +79,7 @@ func chainToBytes(chain []block) []byte {
 			encodedChain = append(append(encodedChain[:i],byte(1),byte(1)),encodedChain[i+1:]...)
 			i++
 		} else if encodedChain[i]==byte(1) {
+			fmt.Println("I WANNA DIE")
 			encodedChain = append(append(encodedChain[:i],byte(1),byte(2)),encodedChain[i+1:]...)
 			i++
 		}
