@@ -66,10 +66,10 @@ func chainToBytes(chain []block) []byte {
 	var encodedChain []byte
 	for _,block := range chain {
 		encodedBlock := blockToBytes(block)
-		buf := make([]byte,64)
-		binary.Write(bytes.NewBuffer(buf),binary.LittleEndian,uint64(len(encodedBlock)))
-		fmt.Println("AAAAAAAAA",buf,uint64(len(encodedBlock)))
-		encodedChain = append(encodedChain,buf...)
+		buf := new(bytes.Buffer)
+		binary.Write(buf,binary.LittleEndian,uint64(len(encodedBlock)))
+		fmt.Println("AAAAAAAAA",buf.Bytes(),uint64(len(encodedBlock)))
+		encodedChain = append(encodedChain,buf.Bytes()...)
 		encodedChain = append(encodedChain,encodedBlock...)
 	}
 	//now we replace [0] with [1,1] and [1] with [1,2]
