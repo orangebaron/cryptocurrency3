@@ -76,10 +76,10 @@ func chainToBytes(chain []block) []byte {
 	encodedChain = append(encodedChain,byte(2))
 	for i:=0;i<len(encodedChain);i++{
 		if encodedChain[i]==byte(0) {
-			encodedChain = append(append(encodedChain[:i],byte(1),byte(1)),encodedChain[i+1:]...)
+			encodedChain = append(append(encodedChain[:i],byte(1),byte(1)),encodedChain[i+2:]...)
 			i++
 		} else if encodedChain[i]==byte(1) {
-			encodedChain = append(append(encodedChain[:i],byte(1),byte(2)),encodedChain[i+1:]...)
+			encodedChain = append(append(encodedChain[:i],byte(1),byte(2)),encodedChain[i+2:]...)
 			i++
 		}
 	}
