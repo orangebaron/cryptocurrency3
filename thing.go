@@ -38,7 +38,6 @@ func bytesToBlock(data []byte) block {
 }
 func bytesToChain(data []byte) []block {
 	//replace [1,1] with [0] and [1,2] with [1]
-	data = append(data,byte(2))
 	for i:=0;i<len(data);i++{
 		if data[i]==byte(1) && data[i+1]==byte(1) {
 			data = append(append(data[:i],byte(0)),data[i+2:]...)
@@ -50,8 +49,8 @@ func bytesToChain(data []byte) []block {
 
 	var chain []block
 	for len(data)>0 {
-		len,_ := binary.ReadUvarint(bytes.NewReader(data[:64]))
-		data = data[64:]
+		len,_ := binary.ReadUvarint(bytes.NewReader(data[:8]))
+		data = data[8:]
 		chain = append(chain,bytesToBlock(data[:len]))
 		data = data[len:]
 	}
