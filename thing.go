@@ -34,7 +34,9 @@ func (b block) getHash() [hashSize]byte {
 
 func bytesToBlock(data []byte) block {
 	nonce,_ := binary.ReadUvarint(bytes.NewReader(data[len(data)-8:]))
-	return block{data[:len(data)-8],[hashSize]byte{},nonce,uint64(0)}
+	b := block{make([]byte,len(data)-8),[hashSize]byte{},nonce,uint64(0)}
+	copy(b.data,data[:len(data)-8])
+	return b
 }
 func bytesToChain(data []byte) []block {
 	//replace [1,1] with [0] and [1,2] with [1]
@@ -49,10 +51,14 @@ func bytesToChain(data []byte) []block {
 
 	var chain []block
 	for len(data)>0 {
-		len,_ := binary.ReadUvarint(bytes.NewReader(data[:8]))
+		length,_ := binary.ReadUvarint(bytes.NewReader(data[:8]))
 		data = data[8:]
-		chain = append(chain,bytesToBlock(data[:len]))
-		data = data[len:]
+		b := bytesToBlock(data[:length])
+		if len(chain) > 0 {
+			b.prevHash = chain[len(chain)-1].getHash()
+		}
+		chain = append(chain,b)
+		data = data[length:]
 	}
 	return chain
 }
@@ -131,7 +137,6 @@ func handleConn(conn net.Conn) {
 	if data[0] == 0 { //send length of chain
 		binary.Write(conn,binary.LittleEndian,uint32(len(blockchain)))
 	} else if data[0] == 1 { //send chain
-		fmt.Println("Sending data",chainToBytes(blockchain))
 		binary.Write(conn,binary.LittleEndian,append(chainToBytes(blockchain),byte(0)))
 	}
 	conn.Close()
@@ -184,7 +189,6 @@ func main() {
 		sortedNodelist[histogram[lengths[index]]] = node
 		histogram[lengths[index]]++
 	}
-	fmt.Println("Sorted nodelist:",sortedNodelist)
 	//download the largest chain
 	for len(sortedNodelist)>0 {
 		conn,err := net.Dial("tcp",sortedNodelist[len(sortedNodelist)-1])
@@ -195,7 +199,6 @@ func main() {
 		conn.Write([]byte{1})
 		bytes,_ := bufio.NewReader(conn).ReadBytes(0)
 		blockchain = bytesToChain(bytes)
-		fmt.Println("New chain:",blockchain)
 		break
 	}
 	fmt.Println("Chain:",blockchain)
